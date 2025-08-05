@@ -5,7 +5,7 @@
       <div class="flex flex-col gap-3">
         <InfoRow label="Кличка" :value="pet.name" />
         <InfoRow label="Хозяин" :value="pet.owner" />
-        <InfoRow label="День рождения" :value="pet.birthday" />
+        <InfoRow label="Дата рождения" :value="pet.birthDate" />
         <InfoRow label="Возраст" :value="pet.age" />
         <InfoRow label="Порода" :value="pet.breed" />
         <InfoRow label="Любимые игрушки" :value="pet.favToys" />
@@ -13,7 +13,9 @@
       </div>
     </div>
     <div class="flex flex-col gap-5">
-      <h2 class="self-center font-semibold">Дополнительные фото</h2>
+      <h2 class="self-center font-semibold">
+        {{ pet.additionalPhotos ? "Дополнительные фото" : "Фотографий нет :(" }}
+      </h2>
       <div class="grid grid-cols-4 gap-4">
         <img
           v-for="(photo, index) in pet.additionalPhotos"

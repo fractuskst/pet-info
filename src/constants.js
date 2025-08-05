@@ -4,7 +4,7 @@ export const pets = [
     name: "Чуня Грушева",
     type: "Кошка",
     owner: "Костя и Маша",
-    birthday: "6 ноября",
+    birthDate: "6 ноября",
     age: "1.5 года",
     breed: "Метис",
     mainPhoto: "Чуня.jpg",
@@ -24,7 +24,7 @@ export const pets = [
     name: "Кузя Кислодрищев",
     type: "Кот",
     owner: "Костя и Маша",
-    birthday: "17 августа",
+    birthDate: "17 августа",
     mainPhoto: "Кузя.jpg",
   },
 ];
