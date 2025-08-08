@@ -1,17 +1,17 @@
 <template>
-  <div class="flex flex-col gap-5 w-full md:w-xl mx-auto">
+  <div v-if="hasPetInfo" class="flex flex-col gap-5 w-full md:w-xl mx-auto">
     <div class="flex flex-col gap-5">
       <h2 class="self-center font-semibold">Подробнее о питомце</h2>
       <div class="flex flex-col gap-3">
-        <InfoRow label="Кличка" :value="pet.name" />
-        <InfoRow label="Хозяин" :value="pet.owner" />
-        <InfoRow label="Дата рождения" :value="pet.birthDate" />
-        <InfoRow label="Возраст" :value="pet.age" />
-        <InfoRow label="Порода" :value="pet.breed" />
-        <InfoRow label="Любимые игрушки" :value="pet.favToys" />
-        <InfoRow label="Описание" :value="pet.description" />
+        <InfoRow
+          v-for="info in filteredPetInfo"
+          :key="info.label"
+          :label="info.label"
+          :value="info.value"
+        />
       </div>
     </div>
+
     <div class="flex flex-col gap-5">
       <h2 class="self-center font-semibold">
         {{ pet.additionalPhotos ? "Дополнительные фото" : "Фотографий нет :(" }}
@@ -27,6 +27,9 @@
       </div>
     </div>
   </div>
+
+  <p v-else class="text-center font-semibold p-16">Данных о питомце нет :(</p>
+
   <vue-easy-lightbox
     :visible="visibleRef"
     :imgs="pet.additionalPhotos"
@@ -38,8 +41,7 @@
 <script setup>
 import InfoRow from "@/components/InfoRow.vue";
 import VueEasyLightbox from "vue-easy-lightbox";
-import { pets } from "@/constants";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 
 const props = defineProps({
   id: {
@@ -48,7 +50,52 @@ const props = defineProps({
   },
 });
 
-const pet = pets.find((pet) => pet.id === Number(props.id));
+const storedPet = localStorage.getItem(`pet_${props.id}`);
+
+const pet = JSON.parse(storedPet);
+
+const formattedBirthDate = computed(() => {
+  if (!pet.birthDate) return null;
+
+  const date = new Date(pet.birthDate);
+  return date.toLocaleDateString();
+});
+
+const petInfo = ref([
+  {
+    label: "Кличка",
+    value: pet.name,
+  },
+  {
+    label: "Хозяин",
+    value: pet.owner,
+  },
+  {
+    label: "Дата рождения",
+    value: formattedBirthDate,
+  },
+  {
+    label: "Возраст",
+    value: pet.age,
+  },
+  {
+    label: "Порода",
+    value: pet.breed,
+  },
+  {
+    label: "Любимые игрушки",
+    value: pet.favToys,
+  },
+  {
+    label: "Описание",
+    value: pet.description,
+  },
+]);
+
+const filteredPetInfo = computed(() =>
+  petInfo.value.filter((info) => info.value),
+);
+const hasPetInfo = computed(() => filteredPetInfo.value.length > 0);
 
 const visibleRef = ref(false);
 const indexRef = ref(0);

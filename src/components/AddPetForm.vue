@@ -1,10 +1,12 @@
 <template>
   <div
     v-if="isOpen"
-    class="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
+    class="fixed inset-0 bg-black/70 flex items-start justify-center z-50 overflow-y-auto"
     @click.self="closeForm"
   >
-    <form class="flex flex-col gap-2 bg-white p-6 rounded-xl w-full max-w-md">
+    <form
+      class="flex flex-col gap-2 bg-white p-6 rounded-xl w-full max-w-md my-auto"
+    >
       <h2 class="self-center font-semibold">Добавление питомца</h2>
       <div class="flex flex-col gap-1" v-for="input in inputs" :key="input.id">
         <label :for="input.id">{{ input.label }}</label>
@@ -38,13 +40,16 @@
 </template>
 
 <script setup>
+import calculateAge from "@/utils/calculateAge";
+import getTimestamp from "@/utils/getTimestamp";
 import { ref, watch, onMounted, onUnmounted } from "vue";
 
 const props = defineProps({
   isOpen: Boolean,
+  pets: Array,
 });
 
-const emit = defineEmits(["update:isOpen"]);
+const emit = defineEmits(["update:isOpen", "update:pets"]);
 
 const closeForm = () => {
   emit("update:isOpen", false);
@@ -69,14 +74,33 @@ const resetForm = () => {
   description.value = "";
 };
 
+const formatAge = (years, months) => {
+  if (months) {
+    return `${years}.${months}`;
+  }
+  return `${years}`;
+};
+
 const handleSubmit = () => {
-  const values = inputs.value.map((input) => [input.id, input.value]);
-  const result = {
+  const birthDateInput = inputs.value.find((input) => input.id === "birthDate");
+  const birthTimeStamp = getTimestamp(birthDateInput.value);
+
+  const values = inputs.value.map((input) => {
+    return [input.id, input.id === "birthDate" ? birthTimeStamp : input.value];
+  });
+
+  const { years, months } = calculateAge(birthTimeStamp);
+
+  const formData = {
     ...Object.fromEntries(values),
+    age: birthTimeStamp ? formatAge(years, months) : null,
     description: description.value,
   };
   closeForm();
-  console.log(result);
+
+  emit("update:pets", [...props.pets, formData]);
+
+  console.log(formData);
 };
 
 watch(
@@ -132,6 +156,14 @@ const inputs = ref([
     type: "text",
     label: "Любимые игрушки",
     placeholder: "Введите любимые игрушки питомца",
+    value: "",
+  },
+
+  {
+    id: "mainPhoto",
+    type: "text",
+    label: "Фото",
+    placeholder: "Введите URL главного фото",
     value: "",
   },
 ]);

@@ -1,9 +1,15 @@
 <template>
   <div
-    class="flex flex-col gap-4 rounded-lg shadow p-6 hover:-translate-y-1 transition cursor-pointer"
-    @click="openPetDetails(pet.id)"
+    class="flex flex-col gap-4 rounded-lg shadow p-6 hover:-translate-y-1 transition cursor-pointer h-full"
+    @click="openPetDetails(pet.id, pet)"
   >
-    <img :src="pet.mainPhoto" :alt="`Фото ${pet.name}`" class="rounded-xl" />
+    <div class="aspect-[3/4] overflow-hidden rounded-xl">
+      <img
+        :src="pet.mainPhoto || placeholder"
+        :alt="pet.name"
+        class="w-full h-full"
+      />
+    </div>
 
     <div class="flex flex-col items-left">
       <h2 class="font-bold text-md">{{ pet.name }}</h2>
@@ -14,6 +20,7 @@
 
 <script setup>
 import { useRouter } from "vue-router";
+import placeholder from "@/assets/images/pet-placeholder.png";
 
 defineProps({
   pet: {
@@ -24,7 +31,8 @@ defineProps({
 
 const router = useRouter();
 
-const openPetDetails = (petId) => {
+const openPetDetails = (petId, pet) => {
+  localStorage.setItem(`pet_${petId}`, JSON.stringify(pet));
   router.push(`/${petId}`);
 };
 </script>
