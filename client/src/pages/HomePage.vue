@@ -23,6 +23,10 @@ import AddPetForm from "@/components/AddPetForm.vue";
 import PetList from "@/components/PetList.vue";
 import { ref } from "vue";
 
+fetch("http://localhost:5000/pets")
+  .then((res) => res.json())
+  .then((data) => console.log(data));
+
 const pets = ref([
   {
     id: 1,
