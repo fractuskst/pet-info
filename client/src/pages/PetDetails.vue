@@ -1,7 +1,5 @@
 <template>
-  <p v-if="isLoading" class="text-center font-semibold p-16">
-    Загружаем данные...
-  </p>
+  <Spinner v-if="isLoading" class="self-center p-16" />
 
   <div v-else class="flex flex-col gap-5 w-full md:w-xl mx-auto">
     <div class="flex justify-between">
@@ -63,6 +61,7 @@ import VueEasyLightbox from "vue-easy-lightbox";
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import Button from "@/components/ui/Button.vue";
+import Spinner from "@/components/ui/Spinner.vue";
 import PetForm from "@/components/PetForm.vue";
 import { getPet, deletePet } from "@/services/petService";
 

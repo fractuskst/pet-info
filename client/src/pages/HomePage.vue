@@ -14,9 +14,7 @@
     >
   </div>
 
-  <p v-if="isLoading" class="text-center font-semibold p-16">
-    Загружаем питомцев...
-  </p>
+  <Spinner v-if="isLoading" class="self-center p-16" />
 
   <PetList v-else-if="filteredPets.length" :pets="filteredPets" />
   <p v-else class="text-center font-semibold p-10">
@@ -31,6 +29,7 @@
 import PetForm from "@/components/PetForm.vue";
 import PetList from "@/components/PetList.vue";
 import Button from "@/components/ui/Button.vue";
+import Spinner from "@/components/ui/Spinner.vue";
 import { getPets } from "@/services/petService";
 import { computed, onMounted, ref } from "vue";
 
