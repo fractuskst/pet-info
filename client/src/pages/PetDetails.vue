@@ -1,7 +1,19 @@
 <template>
-  <div v-if="hasPetInfo" class="flex flex-col gap-5 w-full md:w-xl mx-auto">
-    <div class="flex flex-col gap-5">
-      <h2 class="self-center font-semibold">Подробнее о питомце</h2>
+  <p v-if="isLoading" class="text-center font-semibold p-16">
+    Загружаем данные...
+  </p>
+
+  <div v-else class="flex flex-col gap-5 w-full md:w-xl mx-auto">
+    <div class="flex justify-between">
+      <Button @click="router.push('/')">Назад</Button>
+      <div>
+        <Button @click="isFormOpen = true">ред.</Button>
+        <Button @click="handleDeletePet">удалить</Button>
+      </div>
+    </div>
+
+    <div v-if="hasPetInfo" class="flex flex-col gap-5">
+      <h2 class="text-center font-semibold">Подробнее о питомце</h2>
       <div class="flex flex-col gap-3">
         <InfoRow
           v-for="info in filteredPetInfo"
@@ -12,7 +24,7 @@
       </div>
     </div>
 
-    <div class="flex flex-col gap-5">
+    <!-- <div class="flex flex-col gap-5">
       <h2 class="self-center font-semibold">
         {{ pet.additionalPhotos ? "Дополнительные фото" : "Фотографий нет :(" }}
       </h2>
@@ -22,90 +34,134 @@
           :src="photo"
           :alt="`Фото ${pet.name}`"
           class="rounded-xl cursor-pointer"
-          @click="showLightBox(index)"
+          @click="handleShowLightBox(index)"
         />
       </div>
-    </div>
+    </div> -->
+
+    <p v-else class="text-center font-semibold pb-10">
+      Данных о питомце нет :(
+    </p>
   </div>
 
-  <p v-else class="text-center font-semibold p-16">Данных о питомце нет :(</p>
-
-  <vue-easy-lightbox
+  <PetForm
+    v-model:isOpen="isFormOpen"
+    :selected-pet="pet"
+    @pet-updated="handlePetUpdated"
+  />
+  <!-- <vue-easy-lightbox
     :visible="visibleRef"
     :imgs="pet.additionalPhotos"
     :index="indexRef"
-    @hide="onHide"
-  />
+    @hide="handleHideLightBox"
+  /> -->
 </template>
 
 <script setup>
 import InfoRow from "@/components/InfoRow.vue";
 import VueEasyLightbox from "vue-easy-lightbox";
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
+import Button from "@/components/ui/Button.vue";
+import PetForm from "@/components/PetForm.vue";
+import { getPet, deletePet } from "@/services/petService";
 
-const props = defineProps({
+const router = useRouter();
+
+const { id } = defineProps({
   id: {
     type: String,
     required: true,
   },
 });
 
-const storedPet = localStorage.getItem(`pet_${props.id}`);
+const isLoading = ref(true);
+const pet = ref(null);
+const isFormOpen = ref(false);
 
-const pet = JSON.parse(storedPet);
+const visibleRef = ref(false);
+const indexRef = ref(0);
+
+onMounted(async () => {
+  try {
+    pet.value = await getPet(id);
+  } catch (err) {
+    console.error(err);
+  } finally {
+    isLoading.value = false;
+  }
+});
+
+const handleDeletePet = async () => {
+  try {
+    await deletePet(id);
+  } catch (err) {
+    console.error(err);
+  }
+  router.push("/");
+};
+
+const handlePetUpdated = (updatedPet) => {
+  pet.value = updatedPet;
+};
 
 const formattedBirthDate = computed(() => {
-  if (!pet.birthDate) return null;
-
-  const date = new Date(pet.birthDate);
+  if (!pet.value?.birthDate) return null;
+  const date = new Date(pet.value.birthDate);
   return date.toLocaleDateString();
 });
 
-const petInfo = ref([
+const petInfo = computed(() => [
   {
     label: "Кличка",
-    value: pet.name,
+    value: pet.value?.name,
+  },
+  {
+    label: "Вид",
+    value: pet.value?.type,
   },
   {
     label: "Хозяин",
-    value: pet.owner,
+    value: pet.value?.owner,
   },
   {
     label: "Дата рождения",
-    value: formattedBirthDate,
+    value: formattedBirthDate.value,
   },
   {
     label: "Возраст",
-    value: pet.age,
+    value: pet.value?.age,
   },
   {
     label: "Порода",
-    value: pet.breed,
+    value: pet.value?.breed,
   },
   {
     label: "Любимые игрушки",
-    value: pet.favToys,
+    value: pet.value?.favToys,
   },
   {
     label: "Описание",
-    value: pet.description,
+    value: pet.value?.description,
   },
 ]);
 
 const filteredPetInfo = computed(() =>
   petInfo.value.filter((info) => info.value),
 );
-const hasPetInfo = computed(() => filteredPetInfo.value.length > 0);
 
-const visibleRef = ref(false);
-const indexRef = ref(0);
+const hasPetInfo = computed(() =>
+  filteredPetInfo.value.some(
+    (info) => info.label !== "Кличка" && info.label !== "Вид",
+  ),
+);
 
-const showLightBox = (index) => {
+const handleShowLightBox = (index) => {
   indexRef.value = index;
   visibleRef.value = true;
 };
 
-const onHide = () => {
+const handleHideLightBox = () => {
   visibleRef.value = false;
 };
 </script>

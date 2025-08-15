@@ -1,7 +1,7 @@
 <template>
   <div
     class="flex flex-col gap-4 rounded-lg shadow p-6 hover:-translate-y-1 transition cursor-pointer h-full"
-    @click="openPetDetails(pet.id, pet)"
+    @click="openPetDetails(pet.id)"
   >
     <div class="aspect-[3/4] overflow-hidden rounded-xl">
       <img
@@ -31,8 +31,7 @@ defineProps({
 
 const router = useRouter();
 
-const openPetDetails = (petId, pet) => {
-  localStorage.setItem(`pet_${petId}`, JSON.stringify(pet));
+const openPetDetails = (petId) => {
   router.push(`/${petId}`);
 };
 </script>

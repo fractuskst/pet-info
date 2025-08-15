@@ -1,7 +1,5 @@
 {
-  "name": "pet-info",
-  "version": "0.0.0",
-  "private": true,
+  "name": "pet-info-client",
   "type": "module",
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
