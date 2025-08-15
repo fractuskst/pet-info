@@ -3,7 +3,7 @@ import { DB } from "../db/database.js";
 
 const router = express.Router();
 
-router.get("/pets", (req, res) => {
+router.get("/", (req, res) => {
   const sql = "SELECT * FROM pets";
 
   DB.all(sql, [], (err, rows) => {
@@ -11,48 +11,102 @@ router.get("/pets", (req, res) => {
       console.error("Error fetching pets:", err.message);
       return res.status(500).json({ error: "Failed to fetch pets" });
     }
-    res.json(rows);
+
+    res.status(200).json(rows);
   });
 });
 
-router.post("/pets", (req, res) => {
-  const { name, type, owner, birthDate, breed, favToys, description } =
+router.get("/:id", (req, res) => {
+  const { id } = req.params;
+
+  const sql = "SELECT * FROM pets WHERE id = ?";
+
+  DB.get(sql, [id], (err, row) => {
+    if (err) {
+      console.error("Error fetching pet:", err.message);
+      return res.status(500).json({ error: "Failed to fetch pet" });
+    }
+
+    if (!row) {
+      return res.status(404).json({ error: "Pet not found" });
+    }
+
+    res.status(200).json(row);
+  });
+});
+
+router.post("/", (req, res) => {
+  const { name, type, owner, birthDate, age, breed, favToys, description } =
     req.body;
 
-  if (!name || !type) {
+  if (!name.trim() || !type.trim()) {
     return res.status(400).json({ error: "Name and type are required" });
   }
 
   const sql = `
-    INSERT INTO pets (name, type, owner, birthDate, breed, favToys, description)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO pets (name, type, owner, birthDate, age, breed, favToys, description)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
-  const params = [name, type, owner, birthDate, breed, favToys, description];
+  const params = [
+    name,
+    type,
+    owner,
+    birthDate,
+    age,
+    breed,
+    favToys,
+    description,
+  ];
 
   DB.run(sql, params, function (err) {
     if (err) {
       console.error("Error adding pet:", err.message);
       return res.status(500).json({ error: "Failed to add pet" });
     }
-    res
-      .status(201)
-      .json({ id: this.lastID, message: "Pet added successfully" });
+
+    const newPet = {
+      id: this.lastID,
+      name,
+      type,
+      owner,
+      birthDate,
+      age,
+      breed,
+      favToys,
+      description,
+    };
+
+    res.status(201).json(newPet);
   });
 });
 
-router.patch("/pets/:id", (req, res) => {
+router.patch("/:id", (req, res) => {
   const { id } = req.params;
   const updates = req.body;
 
-  if (Object.keys(updates).length === 0) {
-    return res.status(400).json({ error: "No fields to update" });
+  const allowedFields = [
+    "name",
+    "type",
+    "owner",
+    "birthDate",
+    "age",
+    "breed",
+    "favToys",
+    "description",
+  ];
+  const filteredUpdates = Object.fromEntries(
+    Object.entries(updates).filter(([key]) => allowedFields.includes(key)),
+  );
+
+  if (Object.keys(filteredUpdates).length === 0) {
+    return res.status(400).json({ error: "No valid fields to update" });
   }
 
-  const fields = Object.keys(updates)
+  const fields = Object.keys(filteredUpdates)
     .map((key) => `${key} = ?`)
     .join(", ");
-  const values = Object.values(updates);
+  const values = Object.values(filteredUpdates);
 
   const sql = `UPDATE pets SET ${fields} WHERE id = ?`;
 
@@ -66,11 +120,15 @@ router.patch("/pets/:id", (req, res) => {
       return res.status(404).json({ error: "Pet not found" });
     }
 
-    res.status(200).json({ message: "Pet updated successfully" });
+    DB.get("SELECT * FROM pets WHERE id = ?", [id], (err, row) => {
+      if (err)
+        return res.status(500).json({ error: "Failed to fetch updated pet" });
+      res.status(200).json(row);
+    });
   });
 });
 
-router.delete("/pets/:id", (req, res) => {
+router.delete("/:id", (req, res) => {
   const { id } = req.params;
 
   const sql = `DELETE FROM pets WHERE id=?`;

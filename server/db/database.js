@@ -18,6 +18,7 @@ export const initDB = () => {
       type TEXT,
       owner TEXT,
       birthDate INTEGER,
+      age TEXT,
       breed TEXT,
       favToys TEXT,
       description TEXT
