@@ -32,6 +32,9 @@ import Button from "@/components/ui/Button.vue";
 import Spinner from "@/components/ui/Spinner.vue";
 import { getPets } from "@/services/petService";
 import { computed, onMounted, ref } from "vue";
+import { useToast } from "vue-toastification";
+
+const toast = useToast();
 
 const isLoading = ref(true);
 const pets = ref([]);
@@ -42,7 +45,7 @@ onMounted(async () => {
   try {
     pets.value = await getPets();
   } catch (err) {
-    console.error(err);
+    toast.error("Ошибка загрузки питомцев:", err.message);
   } finally {
     isLoading.value = false;
   }

@@ -64,6 +64,7 @@ import Button from "@/components/ui/Button.vue";
 import Spinner from "@/components/ui/Spinner.vue";
 import PetForm from "@/components/PetForm.vue";
 import { getPet, deletePet } from "@/services/petService";
+import { useToast } from "vue-toastification";
 
 const router = useRouter();
 
@@ -73,6 +74,8 @@ const { id } = defineProps({
     required: true,
   },
 });
+
+const toast = useToast();
 
 const isLoading = ref(true);
 const pet = ref(null);
@@ -85,7 +88,7 @@ onMounted(async () => {
   try {
     pet.value = await getPet(id);
   } catch (err) {
-    console.error(err);
+    toast.error("Ошибка загрузки питомца:", err.message);
   } finally {
     isLoading.value = false;
   }
@@ -94,8 +97,9 @@ onMounted(async () => {
 const handleDeletePet = async () => {
   try {
     await deletePet(id);
+    toast.success("Питомец успешно удален!");
   } catch (err) {
-    console.error(err);
+    toast.error("Ошибка удаления питомца:", err.message);
   }
   router.push("/");
 };

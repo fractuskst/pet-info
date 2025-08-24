@@ -2,7 +2,7 @@
   <Overlay v-if="isOpen" @click.self="closeForm">
     <form
       class="flex flex-col gap-2 bg-white p-6 rounded-xl w-full max-w-md my-auto"
-      @submit="handleSubmit"
+      @submit.prevent="handleSubmit"
     >
       <h2 class="self-center font-semibold">
         {{ selectedPet ? "Редактирование питомца" : "Добавление питомца" }}
@@ -46,6 +46,7 @@ import { reactive, watch, onMounted, onUnmounted } from "vue";
 import Button from "./ui/Button.vue";
 import Overlay from "./ui/Overlay.vue";
 import { createPet, updatePet } from "@/services/petService";
+import { useToast } from "vue-toastification";
 
 const { isOpen, selectedPet } = defineProps({
   isOpen: Boolean,
@@ -53,6 +54,8 @@ const { isOpen, selectedPet } = defineProps({
 });
 
 const emit = defineEmits(["update:isOpen", "pet-added", "pet-updated"]);
+
+const toast = useToast();
 
 const closeForm = () => {
   emit("update:isOpen", false);
@@ -136,15 +139,20 @@ const handleSubmit = async () => {
     if (selectedPet) {
       result = await updatePet(selectedPet.id, preparedFormData);
       emit("pet-updated", result);
+      toast.success("Питомец успешно обновлен!");
     } else {
       result = await createPet(preparedFormData);
       emit("pet-added", result);
+      toast.success("Питомец успешно добавлен!");
     }
     closeForm();
   } catch (err) {
-    console.error(
-      selectedPet ? "Ошибка обновления питомца:" : "Ошибка создания питомца:",
-      err,
+    toast.error(
+      `${
+        selectedPet
+          ? "Ошибка обновления питомца: "
+          : "Ошибка создания питомца: "
+      } ${err.message}`,
     );
   }
 };
