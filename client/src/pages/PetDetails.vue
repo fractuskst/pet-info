@@ -3,10 +3,10 @@
 
   <div v-else class="flex flex-col gap-5 w-full md:w-xl mx-auto">
     <div class="flex justify-between">
-      <Button @click="router.push('/')">Назад</Button>
-      <div>
-        <Button @click="isFormOpen = true">ред.</Button>
-        <Button @click="handleDeletePet">удалить</Button>
+      <Button :icon="Undo" @click="router.push('/')" />
+      <div class="flex gap-1 flex-nowrap">
+        <Button @click="isFormOpen = true" :icon="Pencil" />
+        <Button @click="handleDeletePet" :icon="Trash2" />
       </div>
     </div>
 
@@ -58,6 +58,7 @@
 <script setup>
 import InfoRow from "@/components/InfoRow.vue";
 import VueEasyLightbox from "vue-easy-lightbox";
+import { Undo, Pencil, Trash2 } from "lucide-vue-next";
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import Button from "@/components/ui/Button.vue";

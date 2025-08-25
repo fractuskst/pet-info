@@ -1,6 +1,6 @@
 <template>
   <div
-    class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-5"
+    class="grid justify-items-center grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-5 mb-10"
   >
     <PetCard v-for="pet in pets" :key="pet.id" :pet="pet" />
   </div>

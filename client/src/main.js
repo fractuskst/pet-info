@@ -9,7 +9,7 @@ const app = createApp(App);
 
 app.use(Toast, {
   position: POSITION.BOTTOM_RIGHT,
-  timeout: 2000,
+  timeout: 2500,
 });
 app.use(router);
 app.mount("#app");

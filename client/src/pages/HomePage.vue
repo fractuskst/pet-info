@@ -1,14 +1,20 @@
 <template>
-  <div class="flex justify-end gap-5">
-    <input
-      class="w-1/3 sm:w-2/5 md:w-2/6 outline-none border border-gray-400 rounded-xl p-2 focus:border-gray-500"
-      type="text"
-      id="search"
-      placeholder="Поиск..."
-      :disabled="isLoading"
-      v-model="searchQuery"
-    />
-
+  <div class="flex justify-center sm:justify-end gap-5">
+    <div class="relative self-center w-1/3 lg:w-1/5">
+      <Search
+        v-if="!searchQuery"
+        class="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500"
+      />
+      <input
+        :class="[
+          'w-full outline-none border border-gray-400 rounded-xl pr-2 p-2 focus:border-gray-500',
+          !searchQuery ? 'pl-8 sm:pl-10' : 'pl-3',
+        ]"
+        type="text"
+        placeholder="Поиск..."
+        v-model="searchQuery"
+      />
+    </div>
     <Button @click="handleOpenForm" :disabled="isLoading"
       >Добавить питомца</Button
     >
@@ -30,6 +36,7 @@ import PetForm from "@/components/PetForm.vue";
 import PetList from "@/components/PetList.vue";
 import Button from "@/components/ui/Button.vue";
 import Spinner from "@/components/ui/Spinner.vue";
+import { Search } from "lucide-vue-next";
 import { getPets } from "@/services/petService";
 import { computed, onMounted, ref } from "vue";
 import { useToast } from "vue-toastification";

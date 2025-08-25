@@ -1,12 +1,17 @@
 <template>
   <Overlay v-if="isOpen" @click.self="closeForm">
     <form
-      class="flex flex-col gap-2 bg-white p-6 rounded-xl w-full max-w-md my-auto"
+      class="relative flex flex-col gap-2 bg-white p-6 rounded-xl w-full max-w-md my-auto"
       @submit.prevent="handleSubmit"
     >
       <h2 class="self-center font-semibold">
         {{ selectedPet ? "Редактирование питомца" : "Добавление питомца" }}
       </h2>
+
+      <X
+        class="absolute stroke-gray-500 size-5 right-5 cursor-pointer hover:stroke-gray-600"
+        @click="closeForm"
+      />
 
       <div
         class="flex flex-col gap-1"
@@ -45,6 +50,7 @@ import getTimestamp from "@/utils/getTimestamp";
 import { reactive, watch, onMounted, onUnmounted } from "vue";
 import Button from "./ui/Button.vue";
 import Overlay from "./ui/Overlay.vue";
+import { X } from "lucide-vue-next";
 import { createPet, updatePet } from "@/services/petService";
 import { useToast } from "vue-toastification";
 
