@@ -53,6 +53,6 @@ cd pet-info
 ### Установка зависимостей и запуск
 
 ```bash
-npm install
+npm run install-all
 npm run dev
 ```
