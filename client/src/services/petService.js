@@ -8,18 +8,31 @@ async function handleResponse(res) {
   return res.json();
 }
 
+export async function getPhotos(pet_id) {
+  const res = await fetch(`${API_URL}/${pet_id}/photos`);
+  return handleResponse(res);
+}
+
+export async function uploadPhotos(pet_id, formData) {
+  const res = await fetch(`${API_URL}/${pet_id}/photos`, {
+    method: "POST",
+    body: formData,
+  });
+  return handleResponse(res);
+}
+
 export async function getPets() {
   const res = await fetch(API_URL);
   return handleResponse(res);
 }
 
-export async function getPet(id) {
-  const res = await fetch(`${API_URL}/${id}`);
+export async function getPet(pet_id) {
+  const res = await fetch(`${API_URL}/${pet_id}`);
   return handleResponse(res);
 }
 
-export async function deletePet(id) {
-  const res = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+export async function deletePet(pet_id) {
+  const res = await fetch(`${API_URL}/${pet_id}`, { method: "DELETE" });
   return handleResponse(res);
 }
 
@@ -32,8 +45,8 @@ export async function createPet(petData) {
   return handleResponse(res);
 }
 
-export async function updatePet(id, petData) {
-  const res = await fetch(`${API_URL}/${id}`, {
+export async function updatePet(pet_id, petData) {
+  const res = await fetch(`${API_URL}/${pet_id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(petData),

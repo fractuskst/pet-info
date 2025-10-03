@@ -5,7 +5,7 @@
     <div class="flex justify-between">
       <Button :icon="Undo" @click="router.push('/')" />
       <div class="flex gap-1 flex-nowrap">
-        <Button @click="isFormOpen = true" :icon="Pencil" />
+        <Button v-if="hasPetInfo" @click="isOpenEditForm = true" :icon="Pencil" />
         <Button @click="handleDeletePet" :icon="Trash2" />
       </div>
     </div>
@@ -13,59 +13,59 @@
     <div v-if="hasPetInfo" class="flex flex-col gap-5">
       <h2 class="text-center font-semibold">Подробнее о питомце</h2>
       <div class="flex flex-col gap-3">
-        <InfoRow
-          v-for="info in filteredPetInfo"
-          :key="info.label"
-          :label="info.label"
-          :value="info.value"
-        />
+        <InfoRow v-for="info in filteredPetInfo" :key="info.label" :label="info.label" :value="info.value" />
       </div>
     </div>
+    <div class="flex flex-col items-center gap-5" v-else>
+      <p class="text-center font-semibold">Данных о питомце нет :(</p>
+      <Button @click="isOpenEditForm = true" :icon="Pencil">Редактировать</Button>
+    </div>
 
-    <!-- <div class="flex flex-col gap-5">
+    <div class="flex flex-col gap-5 mt-8">
       <h2 class="self-center font-semibold">
-        {{ pet.additionalPhotos ? "Дополнительные фото" : "Фотографий нет :(" }}
+        {{ photos.length ? "Дополнительные фото" : "Фотографий нет :(" }}
       </h2>
-      <div class="grid grid-cols-4 gap-4">
+      <div v-if="photos.length" class="grid grid-cols-4 gap-4">
         <img
-          v-for="(photo, index) in pet.additionalPhotos"
-          :src="photo"
+          v-for="(photo, index) in photos"
+          :src="photo.url"
           :alt="`Фото ${pet.name}`"
-          class="rounded-xl cursor-pointer"
+          class="rounded-xl border cursor-pointer"
           @click="handleShowLightBox(index)"
+          :key="photo.id"
         />
       </div>
-    </div> -->
-
-    <p v-else class="text-center font-semibold pb-10">
-      Данных о питомце нет :(
-    </p>
+      <Button @click="isOpenPhotoForm = true" class="self-center" :icon="ImageUp">Добавить</Button>
+    </div>
   </div>
 
-  <PetForm
-    v-model:isOpen="isFormOpen"
-    :selected-pet="pet"
-    @pet-updated="handlePetUpdated"
+  <PetForm v-model:isOpen="isOpenEditForm" :selected-pet="pet" @pet-updated="handlePetUpdated" />
+  <PhotoForm
+    v-model:isOpen="isOpenPhotoForm"
+    :pet-id="id"
+    :current-photo-count="photos.length"
+    @photo-uploaded="handlePhotoUploaded"
   />
-  <!-- <vue-easy-lightbox
+  <vue-easy-lightbox
     :visible="visibleRef"
-    :imgs="pet.additionalPhotos"
+    :imgs="photos.map((p) => p.url)"
     :index="indexRef"
     @hide="handleHideLightBox"
-  /> -->
+  />
 </template>
 
 <script setup>
 import InfoRow from "@/components/InfoRow.vue";
 import VueEasyLightbox from "vue-easy-lightbox";
-import { Undo, Pencil, Trash2 } from "lucide-vue-next";
+import { Undo, Pencil, Trash2, ImageUp } from "lucide-vue-next";
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import Button from "@/components/ui/Button.vue";
 import Spinner from "@/components/ui/Spinner.vue";
 import PetForm from "@/components/PetForm.vue";
-import { getPet, deletePet } from "@/services/petService";
+import { getPhotos, getPet, deletePet } from "@/services/petService";
 import { useToast } from "vue-toastification";
+import PhotoForm from "@/components/PhotoForm.vue";
 
 const router = useRouter();
 
@@ -80,7 +80,10 @@ const toast = useToast();
 
 const isLoading = ref(true);
 const pet = ref(null);
-const isFormOpen = ref(false);
+const photos = ref([]);
+
+const isOpenEditForm = ref(false);
+const isOpenPhotoForm = ref(false);
 
 const visibleRef = ref(false);
 const indexRef = ref(0);
@@ -88,8 +91,12 @@ const indexRef = ref(0);
 onMounted(async () => {
   try {
     pet.value = await getPet(id);
+    photos.value = await getPhotos(id);
   } catch (err) {
-    toast.error("Ошибка загрузки питомца:", err.message);
+    if (err && pet.value === null) {
+      router.replace("/");
+    }
+    toast.error(`Ошибка загрузки данных: ${err.message}`);
   } finally {
     isLoading.value = false;
   }
@@ -100,13 +107,17 @@ const handleDeletePet = async () => {
     await deletePet(id);
     toast.success("Питомец успешно удален!");
   } catch (err) {
-    toast.error("Ошибка удаления питомца:", err.message);
+    toast.error(`Ошибка удаления питомца: ${err.message}`);
   }
   router.push("/");
 };
 
 const handlePetUpdated = (updatedPet) => {
   pet.value = updatedPet;
+};
+
+const handlePhotoUploaded = (uploadedPhoto) => {
+  photos.value = [...photos.value, ...uploadedPhoto];
 };
 
 const formattedBirthDate = computed(() => {
@@ -123,10 +134,6 @@ const petInfo = computed(() => [
   {
     label: "Вид",
     value: pet.value?.type,
-  },
-  {
-    label: "Хозяин",
-    value: pet.value?.owner,
   },
   {
     label: "Дата рождения",
@@ -150,14 +157,10 @@ const petInfo = computed(() => [
   },
 ]);
 
-const filteredPetInfo = computed(() =>
-  petInfo.value.filter((info) => info.value),
-);
+const filteredPetInfo = computed(() => petInfo.value.filter((info) => info.value));
 
 const hasPetInfo = computed(() =>
-  filteredPetInfo.value.some(
-    (info) => info.label !== "Кличка" && info.label !== "Вид",
-  ),
+  filteredPetInfo.value.some((info) => info.label !== "Кличка" && info.label !== "Вид"),
 );
 
 const handleShowLightBox = (index) => {

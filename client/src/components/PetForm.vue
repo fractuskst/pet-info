@@ -1,5 +1,5 @@
 <template>
-  <Overlay v-if="isOpen" @click.self="closeForm">
+  <Overlay v-if="isOpen" @mousedown.self="closeForm">
     <form
       class="relative flex flex-col gap-2 bg-white p-6 rounded-xl w-full max-w-md my-auto"
       @submit.prevent="handleSubmit"
@@ -8,16 +8,9 @@
         {{ selectedPet ? "Редактирование питомца" : "Добавление питомца" }}
       </h2>
 
-      <X
-        class="absolute stroke-gray-500 size-5 right-5 cursor-pointer hover:stroke-gray-600"
-        @click="closeForm"
-      />
+      <X class="absolute stroke-gray-500 size-5 right-5 cursor-pointer hover:stroke-gray-600" @click="closeForm" />
 
-      <div
-        class="flex flex-col gap-1"
-        v-for="field in formFields"
-        :key="field.id"
-      >
+      <div class="flex flex-col gap-1" v-for="field in formFields" :key="field.id">
         <label :for="field.id">{{ field.label }}</label>
         <input
           class="outline-none text-sm border border-gray-400 rounded-xl p-2 focus:border-gray-500"
@@ -36,9 +29,7 @@
         ></textarea>
       </div>
 
-      <Button type="submit">{{
-        selectedPet ? "Подтвердить изменения" : "Добавить"
-      }}</Button>
+      <Button type="submit">{{ selectedPet ? "Подтвердить изменения" : "Добавить" }}</Button>
     </form>
   </Overlay>
 </template>
@@ -80,12 +71,6 @@ const formFields = [
     type: "text",
     placeholder: "Введите вид животного (кошка, собака и т.д)",
   },
-  {
-    id: "owner",
-    label: "Хозяин",
-    type: "text",
-    placeholder: "Введите имя хозяина",
-  },
   { id: "birthDate", label: "Дата рождения", type: "date", placeholder: "" },
   {
     id: "breed",
@@ -107,9 +92,7 @@ const formFields = [
   },
 ];
 
-const formData = reactive(
-  Object.fromEntries(formFields.map((f) => [f.id, ""])),
-);
+const formData = reactive(Object.fromEntries(formFields.map((f) => [f.id, ""])));
 
 const populateForm = (pet) => {
   Object.keys(formData).forEach((key) => {
@@ -123,12 +106,8 @@ const populateForm = (pet) => {
 };
 
 const prepareFormData = () => {
-  const birthTimeStamp = formData.birthDate
-    ? getTimestamp(formData.birthDate)
-    : null;
-  const { years, months } = birthTimeStamp
-    ? calculateAge(birthTimeStamp)
-    : { years: null, months: null };
+  const birthTimeStamp = formData.birthDate ? getTimestamp(formData.birthDate) : null;
+  const { years, months } = birthTimeStamp ? calculateAge(birthTimeStamp) : { years: null, months: null };
 
   return {
     ...formData,
@@ -153,13 +132,7 @@ const handleSubmit = async () => {
     }
     closeForm();
   } catch (err) {
-    toast.error(
-      `${
-        selectedPet
-          ? "Ошибка обновления питомца: "
-          : "Ошибка создания питомца: "
-      } ${err.message}`,
-    );
+    toast.error(`${selectedPet ? "Ошибка обновления питомца: " : "Ошибка создания питомца: "} ${err.message}`);
   }
 };
 

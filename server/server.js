@@ -1,8 +1,6 @@
 import express from "express";
 import "dotenv/config";
 import cors from "cors";
-import path from "path";
-import fs from "fs";
 
 import { initDB } from "./db/database.js";
 import petsRouter from "./routes/pets.js";
@@ -13,6 +11,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.use("/uploads", express.static("uploads"));
 app.use("/pets", petsRouter);
 
 const startApp = async () => {

@@ -10,13 +10,17 @@ export const DB = new sql3.Database("./db/database.db", (err) => {
   console.log("Connected to the DB");
 });
 
+DB.run("PRAGMA foreign_keys = ON");
+
 export const initDB = () => {
-  const sql = `
+  // todo user_id not null
+  const sqlPets = `
     CREATE TABLE IF NOT EXISTS pets (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT,
-      type TEXT,
-      owner TEXT,
+      user_id INTEGER,
+      name TEXT NOT NULL,
+      type TEXT NOT NULL, 
+      main_photo_url TEXT,
       birthDate INTEGER,
       age TEXT,
       breed TEXT,
@@ -25,11 +29,28 @@ export const initDB = () => {
     )
   `;
 
-  DB.run(sql, (err) => {
+  const sqlPhotos = `
+  CREATE TABLE IF NOT EXISTS pet_photos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    pet_id INTEGER NOT NULL,
+    url TEXT NOT NULL,
+    FOREIGN KEY (pet_id) REFERENCES pets(id) ON DELETE CASCADE
+  )
+`;
+
+  DB.run(sqlPets, (err) => {
     if (err) {
       console.error("Error creating pets table:", err.message);
     } else {
       console.log("Pets table ready!");
+    }
+  });
+
+  DB.run(sqlPhotos, (err) => {
+    if (err) {
+      console.error("Error creating pet_photos table:", err.message);
+    } else {
+      console.log("Pet photos table ready!");
     }
   });
 };
