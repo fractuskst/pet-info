@@ -9,18 +9,18 @@
       <X class="absolute stroke-gray-500 size-5 right-5 cursor-pointer hover:stroke-gray-600" @click="closeForm" />
 
       <div
+        v-if="freeSlots"
         class="border-dashed border-2 border-gray-300 rounded p-10 text-center cursor-pointer hover:border-gray-500 transition-colors"
-        @drop.prevent="isDesktop && handleDropImage($event)"
+        @drop.prevent="isDesktop && handleFileEvent($event)"
         @dragover.prevent
         @click="fileInput.click()"
       >
         <p class="text-gray-500">
-          {{ isDesktop ? "Перетащите сюда фото или кликните для выбора" : "Нажмите для выбора фото" }}
+          {{ dropzoneText }}
         </p>
-        <p class="text-gray-500">
-          Можно добавить ещё {{ MAX_PHOTOS_PER_PET - (currentPhotoCount + selectedFiles.length) }} фото
-        </p>
-        <input ref="fileInput" type="file" multiple accept="image/*" class="hidden" @change="handleFilesChange" />
+        <p class="text-gray-400">Можно добавить ещё {{ freeSlots }} фото</p>
+
+        <input ref="fileInput" type="file" multiple accept="image/*" class="hidden" @change="handleFileEvent" />
       </div>
 
       <div v-if="previewImages.length" class="flex justify-center flex-wrap gap-2 mt-2">
@@ -32,8 +32,7 @@
           />
         </div>
       </div>
-
-      <Button type="submit" :disabled="isUploading || selectedFiles.length === 0">Добавить</Button>
+      <Button type="submit" :disabled="isUploading || !selectedFiles.length">Добавить</Button>
     </form>
   </Overlay>
 </template>
@@ -45,8 +44,7 @@ import Overlay from "./ui/Overlay.vue";
 import { computed, ref } from "vue";
 import { useToast } from "vue-toastification";
 import { uploadPhotos } from "@/services/petService";
-
-const MAX_PHOTOS_PER_PET = 10;
+import { MAX_PHOTOS_PER_PET } from "../../../constants";
 
 const props = defineProps({
   isOpen: Boolean,
@@ -65,6 +63,12 @@ const isUploading = ref(false);
 
 const isDesktop = computed(() => window.innerWidth >= 768);
 
+const dropzoneText = computed(() => {
+  return isDesktop.value ? "Перетащите сюда фото или кликните для выбора" : "Нажмите для выбора фото";
+});
+
+const freeSlots = computed(() => MAX_PHOTOS_PER_PET - (props.currentPhotoCount + selectedFiles.value.length));
+
 const closeForm = () => {
   previewImages.value.forEach(URL.revokeObjectURL);
   emit("update:isOpen", false);
@@ -73,23 +77,15 @@ const closeForm = () => {
 };
 
 const addFiles = (files) => {
-  const imageFiles = files.filter((file) => file.type.startsWith("image/"));
-  const freeSlots = MAX_PHOTOS_PER_PET - (props.currentPhotoCount + selectedFiles.value.length);
-  const filesToAdd = imageFiles.slice(0, freeSlots);
+  const newFiles = files.filter((file) => file.type.startsWith("image/")).slice(0, freeSlots.value);
 
-  selectedFiles.value.push(...filesToAdd);
-
-  const newPreviews = filesToAdd.map((image) => URL.createObjectURL(image));
-  previewImages.value.push(...newPreviews);
+  const newPreviews = newFiles.map((image) => URL.createObjectURL(image));
+  selectedFiles.value = [...selectedFiles.value, ...newFiles];
+  previewImages.value = [...previewImages.value, ...newPreviews];
 };
 
-const handleFilesChange = (event) => {
-  const files = Array.from(event.target.files);
-  addFiles(files);
-};
-
-const handleDropImage = (event) => {
-  const files = Array.from(event.dataTransfer.files);
+const handleFileEvent = (event) => {
+  const files = event.dataTransfer ? Array.from(event.dataTransfer.files) : Array.from(event.target.files);
   addFiles(files);
 };
 

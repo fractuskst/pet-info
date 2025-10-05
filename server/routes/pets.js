@@ -2,8 +2,7 @@ import express from "express";
 import multer from "multer";
 import fs from "fs";
 import { DB } from "../db/database.js";
-
-const MAX_PHOTOS_PER_PET = 10;
+import { MAX_PHOTOS_PER_PET } from "../../constants.js";
 
 const router = express.Router();
 
@@ -29,6 +28,25 @@ router.get("/:id/photos", (req, res) => {
       return res.status(500).json({ message: "Не удалось загрузить фотографии питомца" });
     }
     res.status(200).json(rows);
+  });
+});
+
+router.delete("/:id/photos", (req, res) => {
+  const { id } = req.params;
+  const { url } = req.body;
+
+  const filePath = url.replace(`${req.protocol}://${req.get("host")}`, ".");
+
+  DB.run("DELETE FROM pet_photos WHERE pet_id = ? AND url = ?", [id, url], (err) => {
+    if (err) {
+      return res.status(500).json({ message: "Не удалось удалить фото" });
+    }
+
+    fs.unlink(filePath, (err) => {
+      if (err) console.warn("Файл для удаления не найден:", filePath);
+    });
+
+    res.status(200).json({ message: "Фото успешно удалено" });
   });
 });
 

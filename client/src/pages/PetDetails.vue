@@ -25,17 +25,27 @@
       <h2 class="self-center font-semibold">
         {{ photos.length ? "Дополнительные фото" : "Фотографий нет :(" }}
       </h2>
-      <div v-if="photos.length" class="grid grid-cols-4 gap-4">
-        <img
-          v-for="(photo, index) in photos"
-          :src="photo.url"
-          :alt="`Фото ${pet.name}`"
-          class="rounded-xl border cursor-pointer"
-          @click="handleShowLightBox(index)"
-          :key="photo.id"
-        />
+      <div v-if="photos.length" class="grid grid-cols-5 gap-4">
+        <div v-for="(photo, index) in photos" :key="photo.id" class="relative">
+          <img
+            :src="photo.url"
+            :alt="`Фото ${pet.name}`"
+            class="relative w-25 h-35 object-cover rounded border border-gray-200 cursor-pointer"
+            @click="handleShowLightBox(index)"
+          />
+          <X
+            class="absolute top-1 right-1 stroke-gray-700 size-5 cursor-pointer hover:stroke-gray-800"
+            @click="handleRemovePhoto(photo.url)"
+          />
+        </div>
       </div>
-      <Button @click="isOpenPhotoForm = true" class="self-center" :icon="ImageUp">Добавить</Button>
+      <Button
+        v-if="photos.length < MAX_PHOTOS_PER_PET"
+        @click="isOpenPhotoForm = true"
+        class="self-center"
+        :icon="ImageUp"
+        >Добавить</Button
+      >
     </div>
   </div>
 
@@ -57,15 +67,16 @@
 <script setup>
 import InfoRow from "@/components/InfoRow.vue";
 import VueEasyLightbox from "vue-easy-lightbox";
-import { Undo, Pencil, Trash2, ImageUp } from "lucide-vue-next";
+import { Undo, Pencil, Trash2, ImageUp, X } from "lucide-vue-next";
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import Button from "@/components/ui/Button.vue";
 import Spinner from "@/components/ui/Spinner.vue";
 import PetForm from "@/components/PetForm.vue";
-import { getPhotos, getPet, deletePet } from "@/services/petService";
+import { getPhotos, deletePhoto, getPet, deletePet } from "@/services/petService";
 import { useToast } from "vue-toastification";
 import PhotoForm from "@/components/PhotoForm.vue";
+import { MAX_PHOTOS_PER_PET } from "../../../constants";
 
 const router = useRouter();
 
@@ -125,6 +136,16 @@ const formattedBirthDate = computed(() => {
   const date = new Date(pet.value.birthDate);
   return date.toLocaleDateString();
 });
+
+const handleRemovePhoto = async (url) => {
+  try {
+    await deletePhoto(id, url);
+    photos.value = photos.value.filter((photo) => photo.url !== url);
+    toast.success("Фотография успешно удалена!");
+  } catch (err) {
+    toast.error(`Ошибка удаления фотографии: ${err.message}`);
+  }
+};
 
 const petInfo = computed(() => [
   {
