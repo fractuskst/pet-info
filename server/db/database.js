@@ -2,7 +2,7 @@ import sqlite3 from "sqlite3";
 
 const sql3 = sqlite3.verbose();
 
-export const DB = new sql3.Database("./db/database.db", (err) => {
+export const DB = new sql3.Database(process.env.DB_PATH, (err) => {
   if (err) {
     console.error("Failed to connect to DB:", err.message);
     return;

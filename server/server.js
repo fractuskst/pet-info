@@ -4,6 +4,7 @@ import cors from "cors";
 
 import { initDB } from "./db/database.js";
 import petsRouter from "./routes/pets.js";
+import photosRouter from "./routes/photos.js";
 
 const PORT = process.env.PORT || 5000;
 
@@ -13,6 +14,7 @@ app.use(express.json());
 
 app.use("/uploads", express.static("uploads"));
 app.use("/pets", petsRouter);
+app.use("/photos", photosRouter);
 
 const startApp = async () => {
   try {

@@ -1,34 +1,7 @@
-const API_URL = "http://localhost:5000/pets";
+import { API_BASE_URL, API_ROUTES } from "@/routes";
+import handleResponse from "@/utils/handleResponse";
 
-async function handleResponse(res) {
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.message);
-  }
-  return res.json();
-}
-
-export async function getPhotos(pet_id) {
-  const res = await fetch(`${API_URL}/${pet_id}/photos`);
-  return handleResponse(res);
-}
-
-export async function deletePhoto(pet_id, url) {
-  const res = await fetch(`${API_URL}/${pet_id}/photos`, {
-    method: "DELETE",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ url }),
-  });
-  return handleResponse(res);
-}
-
-export async function uploadPhotos(pet_id, formData) {
-  const res = await fetch(`${API_URL}/${pet_id}/photos`, {
-    method: "POST",
-    body: formData,
-  });
-  return handleResponse(res);
-}
+const API_URL = `${API_BASE_URL}${API_ROUTES.pets}`;
 
 export async function getPets() {
   const res = await fetch(API_URL);
