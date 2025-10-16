@@ -1,14 +1,17 @@
 <template>
-  <Overlay v-if="isOpen" @mousedown.self="closeForm">
+  <Overlay v-if="appStore.isPetFormOpen" @mousedown.self="handleCloseForm">
     <form
       class="relative flex flex-col gap-2 bg-white p-6 rounded-xl w-full max-w-md my-auto"
       @submit.prevent="handleSubmit"
     >
       <h2 class="self-center font-semibold">
-        {{ selectedPet ? "Редактирование питомца" : "Добавление питомца" }}
+        {{ petsStore.selectedPet ? "Редактирование питомца" : "Добавление питомца" }}
       </h2>
 
-      <X class="absolute stroke-gray-500 size-5 right-5 cursor-pointer hover:stroke-gray-600" @click="closeForm" />
+      <X
+        class="absolute stroke-gray-500 size-5 right-5 cursor-pointer hover:stroke-gray-600"
+        @click="handleCloseForm"
+      />
 
       <div class="flex flex-col gap-1" v-for="field in formFields" :key="field.id">
         <label :for="field.id">{{ field.label }}</label>
@@ -29,33 +32,25 @@
         ></textarea>
       </div>
 
-      <Button type="submit">{{ selectedPet ? "Подтвердить изменения" : "Добавить" }}</Button>
+      <Button type="submit">{{ petsStore.selectedPet ? "Подтвердить изменения" : "Добавить" }}</Button>
     </form>
   </Overlay>
 </template>
 
 <script setup>
-import calculateAge from "@/utils/calculateAge";
-import formatAge from "@/utils/formatAge";
-import getTimestamp from "@/utils/getTimestamp";
 import { reactive, watch, onMounted, onUnmounted } from "vue";
-import Button from "./ui/Button.vue";
+import Button from "./ui/PrimaryButton.vue";
 import Overlay from "./ui/Overlay.vue";
 import { X } from "lucide-vue-next";
-import { createPet, updatePet } from "@/services/petService";
-import { useToast } from "vue-toastification";
+import { usePetsStore } from "@/stores/pets";
+import { useAppStore } from "@/stores/app";
+import prepareFormData from "@/utils/prepareFormData";
 
-const { isOpen, selectedPet } = defineProps({
-  isOpen: Boolean,
-  selectedPet: Object,
-});
+const petsStore = usePetsStore();
+const appStore = useAppStore();
 
-const emit = defineEmits(["update:isOpen", "pet-added", "pet-updated"]);
-
-const toast = useToast();
-
-const closeForm = () => {
-  emit("update:isOpen", false);
+const handleCloseForm = () => {
+  appStore.isPetFormOpen = false;
 };
 
 const formFields = [
@@ -105,54 +100,34 @@ const populateForm = (pet) => {
   });
 };
 
-const prepareFormData = () => {
-  const birthTimeStamp = formData.birthDate ? getTimestamp(formData.birthDate) : null;
-  const { years, months } = birthTimeStamp ? calculateAge(birthTimeStamp) : { years: null, months: null };
-
-  return {
-    ...formData,
-    birthDate: birthTimeStamp,
-    age: birthTimeStamp ? formatAge(years, months) : null,
-  };
-};
-
-const handleSubmit = async () => {
-  const preparedFormData = prepareFormData();
-
-  try {
-    let result;
-    if (selectedPet) {
-      result = await updatePet(selectedPet.id, preparedFormData);
-      emit("pet-updated", result);
-      toast.success("Питомец успешно обновлен!");
-    } else {
-      result = await createPet(preparedFormData);
-      emit("pet-added", result);
-      toast.success("Питомец успешно добавлен!");
-    }
-    closeForm();
-  } catch (err) {
-    toast.error(`${selectedPet ? "Ошибка обновления питомца: " : "Ошибка создания питомца: "} ${err.message}`);
+const handleEscape = (e) => {
+  if (e.key === "Escape" && appStore.isPetFormOpen) {
+    handleCloseForm();
   }
 };
 
+const handleSubmit = () => {
+  const preparedFormData = prepareFormData(formData);
+
+  if (petsStore.selectedPet) {
+    petsStore.editPet(preparedFormData);
+  } else {
+    petsStore.addPet(preparedFormData);
+  }
+  handleCloseForm();
+};
+
 watch(
-  () => isOpen,
+  () => appStore.isPetFormOpen,
   (open) => {
     document.body.style.overflow = open ? "hidden" : "";
-    if (open && selectedPet) {
-      populateForm(selectedPet);
+    if (open && petsStore.selectedPet) {
+      populateForm(petsStore.selectedPet);
     } else if (!open) {
       Object.keys(formData).forEach((key) => (formData[key] = ""));
     }
   },
 );
-
-const handleEscape = (e) => {
-  if (e.key === "Escape" && isOpen) {
-    closeForm();
-  }
-};
 
 onMounted(() => window.addEventListener("keyup", handleEscape));
 onUnmounted(() => window.removeEventListener("keyup", handleEscape));

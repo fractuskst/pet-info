@@ -4,12 +4,12 @@ import handleResponse from "@/utils/handleResponse";
 const API_URL = `${API_BASE_URL}${API_ROUTES.photos}`;
 
 export async function getPhotos(pet_id) {
-  const res = await fetch(`${API_URL}/${pet_id}/photos`);
+  const res = await fetch(`${API_URL}/${pet_id}`);
   return handleResponse(res);
 }
 
 export async function deletePhoto(pet_id, url) {
-  const res = await fetch(`${API_URL}/${pet_id}/photos`, {
+  const res = await fetch(`${API_URL}/${pet_id}`, {
     method: "DELETE",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ url }),
@@ -18,7 +18,7 @@ export async function deletePhoto(pet_id, url) {
 }
 
 export async function uploadPhotos(pet_id, formData) {
-  const res = await fetch(`${API_URL}/${pet_id}/photos`, {
+  const res = await fetch(`${API_URL}/${pet_id}`, {
     method: "POST",
     body: formData,
   });

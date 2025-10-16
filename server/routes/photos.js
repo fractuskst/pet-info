@@ -18,7 +18,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-router.get("/:id/photos", (req, res) => {
+router.get("/:id", (req, res) => {
   const { id } = req.params;
 
   const sql = "SELECT * FROM pet_photos WHERE pet_id = ?";
@@ -31,7 +31,7 @@ router.get("/:id/photos", (req, res) => {
   });
 });
 
-router.post("/:id/photos", upload.array("photos", MAX_PHOTOS_PER_PET), (req, res) => {
+router.post("/:id", upload.array("photos", MAX_PHOTOS_PER_PET), (req, res) => {
   const { id } = req.params;
 
   if (!req.files || req.files.length === 0) {
@@ -85,7 +85,7 @@ router.post("/:id/photos", upload.array("photos", MAX_PHOTOS_PER_PET), (req, res
   });
 });
 
-router.delete("/:id/photos", (req, res) => {
+router.delete("/:id", (req, res) => {
   const { id } = req.params;
   const { url } = req.body;
 
