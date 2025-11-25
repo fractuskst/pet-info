@@ -7,8 +7,9 @@ export const useAppStore = defineStore("app", () => {
 
   const isPetFormOpen = ref(false);
   const isPhotoFormOpen = ref(false);
+  const isMainPhotoModalOpen = ref(false);
 
   const isDesktop = computed(() => window.innerWidth >= 768);
 
-  return { isLoading, error, isPetFormOpen, isPhotoFormOpen, isDesktop };
+  return { isLoading, error, isPetFormOpen, isPhotoFormOpen, isMainPhotoModalOpen, isDesktop };
 });

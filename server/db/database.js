@@ -17,10 +17,10 @@ export const initDB = () => {
   const sqlPets = `
     CREATE TABLE IF NOT EXISTS pets (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER,
+      userId INTEGER,
       name TEXT NOT NULL,
       type TEXT NOT NULL, 
-      main_photo_url TEXT,
+      mainPhoto TEXT,
       birthDate INTEGER,
       age TEXT,
       breed TEXT,
@@ -32,9 +32,9 @@ export const initDB = () => {
   const sqlPhotos = `
   CREATE TABLE IF NOT EXISTS pet_photos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    pet_id INTEGER NOT NULL,
+    petId INTEGER NOT NULL,
     url TEXT NOT NULL,
-    FOREIGN KEY (pet_id) REFERENCES pets(id) ON DELETE CASCADE
+    FOREIGN KEY (petId) REFERENCES pets(id) ON DELETE CASCADE
   )
 `;
 

@@ -17,17 +17,20 @@
 
   <Spinner v-if="petsStore.isLoading" class="self-center p-16" />
 
-  <PetList v-else-if="filteredPets.length" :pets="petsStore.pets" />
+  <PetList v-else-if="filteredPets.length" :pets="filteredPets" />
   <p v-else class="text-center font-semibold p-10">
     <span>Питомцев пока нет :(</span> <br />
     <span>Добавьте первого!</span>
   </p>
 
   <PetForm />
+
+  <SelectMainPhotoModal />
 </template>
 
 <script setup>
 import PetForm from "@/components/PetForm.vue";
+import SelectMainPhotoModal from "@/components/SelectMainPhotoModal.vue";
 import PetList from "@/components/PetList.vue";
 import Button from "@/components/ui/PrimaryButton.vue";
 import Spinner from "@/components/ui/Spinner.vue";

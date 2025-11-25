@@ -44,7 +44,7 @@
 import { X } from "lucide-vue-next";
 import Button from "./ui/PrimaryButton.vue";
 import Overlay from "./ui/Overlay.vue";
-import { computed, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 import { useAppStore } from "@/stores/app";
 import { usePhotosStore } from "@/stores/photos";
 import { usePetsStore } from "@/stores/pets";
@@ -73,4 +73,13 @@ const handleSubmit = async () => {
   await photosStore.submitPending(petsStore.selectedPet.id);
   handleCloseForm();
 };
+
+const handleEscape = (e) => {
+  if (e.key === "Escape" && appStore.isPhotoFormOpen) {
+    handleCloseForm();
+  }
+};
+
+onMounted(() => window.addEventListener("keyup", handleEscape));
+onUnmounted(() => window.removeEventListener("keyup", handleEscape));
 </script>

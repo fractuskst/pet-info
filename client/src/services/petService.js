@@ -8,13 +8,13 @@ export async function getPets() {
   return handleResponse(res);
 }
 
-export async function getPet(pet_id) {
-  const res = await fetch(`${API_URL}/${pet_id}`);
+export async function getPet(petId) {
+  const res = await fetch(`${API_URL}/${petId}`);
   return handleResponse(res);
 }
 
-export async function deletePet(pet_id) {
-  const res = await fetch(`${API_URL}/${pet_id}`, { method: "DELETE" });
+export async function deletePet(petId) {
+  const res = await fetch(`${API_URL}/${petId}`, { method: "DELETE" });
   return handleResponse(res);
 }
 
@@ -27,8 +27,8 @@ export async function createPet(petData) {
   return handleResponse(res);
 }
 
-export async function updatePet(pet_id, petData) {
-  const res = await fetch(`${API_URL}/${pet_id}`, {
+export async function updatePet(petId, petData) {
+  const res = await fetch(`${API_URL}/${petId}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(petData),

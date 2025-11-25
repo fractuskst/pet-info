@@ -23,7 +23,7 @@
 
     <div class="flex flex-col gap-5 mt-8">
       <h2 class="self-center font-semibold">
-        {{ photosStore.photosCount ? "Дополнительные фото" : "Фотографий нет :(" }}
+        {{ photosStore.photosCount ? "Фотографии" : "Фотографий нет :(" }}
       </h2>
 
       <PhotosGrid

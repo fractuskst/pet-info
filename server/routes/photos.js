@@ -21,7 +21,7 @@ const upload = multer({ storage });
 router.get("/:id", (req, res) => {
   const { id } = req.params;
 
-  const sql = "SELECT * FROM pet_photos WHERE pet_id = ?";
+  const sql = "SELECT * FROM pet_photos WHERE petId = ?";
 
   DB.all(sql, [id], (err, rows) => {
     if (err) {
@@ -38,7 +38,7 @@ router.post("/:id", upload.array("photos", MAX_PHOTOS_PER_PET), (req, res) => {
     return res.status(400).json({ message: "Файлы не загружены" });
   }
 
-  DB.get("SELECT COUNT(*) as count from pet_photos WHERE pet_id = ?", [id], (err, row) => {
+  DB.get("SELECT COUNT(*) as count from pet_photos WHERE petId = ?", [id], (err, row) => {
     if (err) {
       return res.status(500).json({ message: "Ошибка при проверке количества фото" });
     }
@@ -66,14 +66,14 @@ router.post("/:id", upload.array("photos", MAX_PHOTOS_PER_PET), (req, res) => {
 
     const urls = filesToSave.map((file) => `${req.protocol}://${req.get("host")}/uploads/${file.filename}`);
 
-    const sql = "INSERT INTO pet_photos (pet_id, url) VALUES (?, ?)";
+    const sql = "INSERT INTO pet_photos (petId, url) VALUES (?, ?)";
     const stmt = DB.prepare(sql);
 
     const addedPhotos = [];
 
     urls.forEach((url) => {
       stmt.run(id, url, function () {
-        addedPhotos.push({ id: this.lastID, pet_id: id, url });
+        addedPhotos.push({ id: this.lastID, petId: id, url });
       });
     });
 
@@ -91,7 +91,7 @@ router.delete("/:id", (req, res) => {
 
   const filePath = url.replace(`${req.protocol}://${req.get("host")}`, ".");
 
-  DB.run("DELETE FROM pet_photos WHERE pet_id = ? AND url = ?", [id, url], (err) => {
+  DB.run("DELETE FROM pet_photos WHERE petId = ? AND url = ?", [id, url], (err) => {
     if (err) {
       return res.status(500).json({ message: "Не удалось удалить фото" });
     }

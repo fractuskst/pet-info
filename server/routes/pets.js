@@ -35,21 +35,22 @@ router.get("/:id", (req, res) => {
 });
 
 router.post("/", (req, res) => {
-  const { user_id, name, type, birthDate, age, breed, favToys, description } = req.body;
+  const { userId, name, type, birthDate, age, breed, favToys, description } = req.body;
 
   if (!name?.trim() || !type?.trim()) {
     return res.status(400).json({ message: "Имя и вид питомца обязательны" });
   }
 
   const sql = `
-    INSERT INTO pets (user_id, name, type, birthDate, age, breed, favToys, description)
+    INSERT INTO pets (userId, name, type, birthDate, age, breed, favToys, description)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
-  const params = [user_id, name, type, birthDate, age, breed, favToys, description];
+  const params = [userId, name, type, birthDate, age, breed, favToys, description];
 
   DB.run(sql, params, function (err) {
     if (err) {
+      console.log(err);
       return res.status(500).json({ message: "Не удалось добавить питомца" });
     }
 
@@ -67,28 +68,18 @@ router.patch("/:id", (req, res) => {
   const { id } = req.params;
   const updates = req.body;
 
-  const allowedFields = ["name", "type", "birthDate", "age", "breed", "favToys", "description"];
-
-  const filteredUpdates = Object.fromEntries(Object.entries(updates).filter(([key]) => allowedFields.includes(key)));
-
-  if (Object.keys(filteredUpdates).length === 0) {
-    return res.status(400).json({ message: "Нет полей для обновления" });
-  }
-
-  const fields = Object.keys(filteredUpdates)
+  const fields = Object.keys(updates)
     .map((key) => `${key} = ?`)
     .join(", ");
-  const values = Object.values(filteredUpdates);
+
+  const values = Object.values(updates);
 
   const sql = `UPDATE pets SET ${fields} WHERE id = ?`;
 
   DB.run(sql, [...values, id], function (err) {
     if (err) {
+      console.log(err);
       return res.status(500).json({ message: "Не удалось обновить питомца" });
-    }
-
-    if (this.changes === 0) {
-      return res.status(404).json({ message: "Питомец не найден" });
     }
 
     DB.get("SELECT * FROM pets WHERE id = ?", [id], (err, row) => {
@@ -103,7 +94,7 @@ router.patch("/:id", (req, res) => {
 router.delete("/:id", (req, res) => {
   const { id } = req.params;
 
-  DB.all("SELECT url FROM pet_photos WHERE pet_id = ?", [id], (err, rows) => {
+  DB.all("SELECT url FROM pet_photos WHERE petId = ?", [id], (err, rows) => {
     if (err) {
       return res.status(500).json({ message: "Ошибка при получении фото" });
     }

@@ -4,7 +4,7 @@
       <img
         :src="photo.url"
         alt="Фото питомца"
-        class="relative w-25 h-35 object-cover rounded border border-gray-200 cursor-pointer"
+        class="w-full h-35 object-cover rounded border border-gray-200 cursor-pointer"
         @click="onPhotoClick(photo, index)"
       />
       <X

@@ -48,8 +48,12 @@ export const usePetsStore = defineStore("pets", () => {
   async function editPet(formData) {
     try {
       const updatedPet = await updatePet(selectedPet.value.id, formData);
-
       selectedPet.value = updatedPet;
+
+      const index = pets.value.findIndex((p) => p.id === updatedPet.id);
+      if (index !== -1) {
+        Object.assign(pets.value[index], updatedPet);
+      }
       toast.success("Питомец успешно обновлен!");
     } catch (err) {
       toast.error(`Ошибка обновления питомца: ${err.message}`);
