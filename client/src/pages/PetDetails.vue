@@ -110,6 +110,10 @@ const handleRemovePet = async () => {
 
 const handleRemovePhoto = (url) => {
   photosStore.removePhoto(id, url);
+
+  if (petsStore.selectedPet.mainPhoto === url) {
+    petsStore.editPet({ mainPhoto: null });
+  }
 };
 
 const handleShowLightBox = (index) => {

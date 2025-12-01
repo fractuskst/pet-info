@@ -65,7 +65,7 @@ export const usePhotosStore = defineStore("photos", () => {
 
   async function submitPending(petId) {
     const formData = new FormData();
-    pendingPhotos.value.forEach((p) => formData.append("photos", p));
+    pendingPhotos.value.forEach((photo) => formData.append("photos", photo));
     await addPhotos(petId, formData);
   }
 
