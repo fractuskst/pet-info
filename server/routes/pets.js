@@ -1,6 +1,6 @@
 import express from "express";
-import fs from "fs";
 import { DB } from "../db/database.js";
+import deleteFile from "../utils/deleteFile.js";
 
 const router = express.Router();
 
@@ -12,7 +12,7 @@ router.get("/", (req, res) => {
       return res.status(500).json({ message: "Не удалось загрузить питомцев" });
     }
 
-    res.status(200).json(rows);
+    return res.status(200).json(rows);
   });
 });
 
@@ -30,23 +30,23 @@ router.get("/:id", (req, res) => {
       return res.status(404).json({ message: "Питомец не найден" });
     }
 
-    res.status(200).json(row);
+    return res.status(200).json(row);
   });
 });
 
 router.post("/", (req, res) => {
-  const { userId, name, type, birthDate, age, breed, favToys, description } = req.body;
+  const { name, type, birthDate, age, breed, favToys, description } = req.body;
 
   if (!name?.trim() || !type?.trim()) {
     return res.status(400).json({ message: "Имя и вид питомца обязательны" });
   }
 
   const sql = `
-    INSERT INTO pets (userId, name, type, birthDate, age, breed, favToys, description)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO pets ( name, type, birthDate, age, breed, favToys, description)
+    VALUES ( ?, ?, ?, ?, ?, ?, ?)
   `;
 
-  const params = [userId, name, type, birthDate, age, breed, favToys, description];
+  const params = [name, type, birthDate, age, breed, favToys, description];
 
   DB.run(sql, params, function (err) {
     if (err) {
@@ -59,7 +59,7 @@ router.post("/", (req, res) => {
         return res.status(500).json({ message: "Не удалось получить питомца" });
       }
 
-      res.status(201).json(row);
+      return res.status(201).json(row);
     });
   });
 });
@@ -68,11 +68,16 @@ router.patch("/:id", (req, res) => {
   const { id } = req.params;
   const updates = req.body;
 
-  const fields = Object.keys(updates)
-    .map((key) => `${key} = ?`)
-    .join(", ");
+  const allowed = ["name", "type", "mainPhoto", "birthDate", "age", "breed", "favToys", "description"];
 
-  const values = Object.values(updates);
+  const keys = Object.keys(updates).filter((k) => allowed.includes(k));
+
+  if (!keys.length) {
+    return res.status(400).json({ message: "Нет валидных полей для обновления" });
+  }
+
+  const fields = keys.map((k) => `${k} = ?`).join(", ");
+  const values = keys.map((k) => updates[k]);
 
   const sql = `UPDATE pets SET ${fields} WHERE id = ?`;
 
@@ -86,7 +91,8 @@ router.patch("/:id", (req, res) => {
       if (err) {
         return res.status(500).json({ message: "Не удалось получить обновлённого питомца" });
       }
-      res.status(200).json(row);
+      // todo - возвращать сообщение об успехе и обновленного питомца
+      return res.status(200).json(row);
     });
   });
 });
@@ -94,9 +100,21 @@ router.patch("/:id", (req, res) => {
 router.delete("/:id", (req, res) => {
   const { id } = req.params;
 
-  DB.all("SELECT url FROM pet_photos WHERE petId = ?", [id], (err, rows) => {
+  DB.all("SELECT url FROM pet_photos WHERE petId = ?", [id], async (err, rows) => {
     if (err) {
       return res.status(500).json({ message: "Ошибка при получении фото" });
+    }
+
+    try {
+      const deletions = rows.map((row) => {
+        const { pathname } = new URL(row.url);
+        const fileKey = pathname.slice(1);
+        return deleteFile(fileKey);
+      });
+
+      await Promise.all(deletions);
+    } catch (err) {
+      return res.status(500).json({ message: "Ошибка при удалении файлов: " + err.message });
     }
 
     DB.run("DELETE FROM pets WHERE id = ?", [id], function (err) {
@@ -107,18 +125,9 @@ router.delete("/:id", (req, res) => {
       if (this.changes === 0) {
         return res.status(404).json({ message: "Питомец не найден" });
       }
+
+      return res.status(200).json({ message: "Питомец успешно удален!" });
     });
-
-    rows.forEach((row) => {
-      const fileUrl = row.url;
-      const filePath = fileUrl.replace(`${req.protocol}://${req.get("host")}`, ".");
-
-      fs.unlink(filePath, (err) => {
-        if (err) console.warn("Файл для удаления не найден:", filePath);
-      });
-    });
-
-    res.status(200).json({ message: "Питомец и его фото удалены" });
   });
 });
 
