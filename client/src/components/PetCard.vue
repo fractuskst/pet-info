@@ -1,6 +1,6 @@
 <template>
   <div
-    class="flex flex-col gap-4 rounded-lg shadow p-6 hover:-translate-y-1 transition cursor-pointer max-w-[300px]"
+    class="flex flex-col gap-4 rounded-lg shadow p-6 hover:-translate-y-1 transition cursor-pointer"
     @click="handleOpenPetDetails(pet.id)"
   >
     <div class="relative group aspect-[3/4] overflow-hidden rounded-xl">
