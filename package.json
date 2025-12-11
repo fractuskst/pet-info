@@ -1,9 +1,9 @@
 {
   "name": "pet-info",
-  "type": "module",
+  "private": true,
+  "packageManager": "pnpm@10.25.0",
   "scripts": {
-    "install-all": "npm install --prefix server && npm install --prefix client",
-    "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\""
+    "dev": "concurrently \"pnpm -F ./server dev\" \"pnpm -F ./client dev\""
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
