@@ -31,11 +31,11 @@
           <img :src="img" class="w-18 h-18 object-cover rounded" />
           <X
             class="absolute top-0 right-0 stroke-gray-500 size-5 cursor-pointer hover:stroke-gray-600"
-            @click="photosStore.removePreparedPhoto(index)"
+            @click="!photosStore.isLoading && photosStore.removePreparedPhoto(index)"
           />
         </div>
       </div>
-      <Button type="submit" :disabled="!photosStore.pendingPhotos.length">Добавить</Button>
+      <Button type="submit" :disabled="!photosStore.pendingPhotos.length || photosStore.isLoading">Добавить</Button>
     </form>
   </Overlay>
 </template>
@@ -45,9 +45,9 @@ import { X } from "lucide-vue-next";
 import Button from "./ui/PrimaryButton.vue";
 import Overlay from "./ui/Overlay.vue";
 import { computed, onMounted, onUnmounted, ref } from "vue";
-import { useAppStore } from "@/stores/app";
-import { usePhotosStore } from "@/stores/photos";
-import { usePetsStore } from "@/stores/pets";
+import { useAppStore } from "@/stores/useAppStore";
+import { usePhotosStore } from "@/stores/usePhotosStore";
+import { usePetsStore } from "@/stores/usePetsStore";
 
 const appStore = useAppStore();
 const photosStore = usePhotosStore();

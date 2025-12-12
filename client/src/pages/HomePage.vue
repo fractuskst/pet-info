@@ -1,7 +1,11 @@
 <template>
   <div class="flex justify-center sm:justify-end gap-5">
     <div class="relative self-center w-1/3 lg:w-1/5">
-      <Search v-if="!searchQuery" class="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+      <Search
+        v-if="!searchQuery"
+        :disabled="petsStore.isLoading"
+        class="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500"
+      />
       <input
         :class="[
           'w-full outline-none border border-gray-400 rounded-xl pr-2 p-2 focus:border-gray-500',
@@ -36,14 +40,14 @@ import Button from "@/components/ui/PrimaryButton.vue";
 import Spinner from "@/components/ui/Spinner.vue";
 import { Search } from "lucide-vue-next";
 import { computed, onMounted, ref } from "vue";
-import { usePetsStore } from "@/stores/pets";
-import { useAppStore } from "@/stores/app";
+import { usePetsStore } from "@/stores/usePetsStore";
+import { useAppStore } from "@/stores/useAppStore";
 
 const petsStore = usePetsStore();
 const appStore = useAppStore();
 
 onMounted(() => {
-  petsStore.fetchPets();
+  petsStore.getPets();
 });
 
 const searchQuery = ref("");

@@ -5,19 +5,20 @@
         :src="photo.url"
         alt="Фото питомца"
         class="w-full h-35 object-cover rounded border border-gray-200 cursor-pointer"
-        @click="onPhotoClick(photo, index)"
+        @click="!petsStore.isLoading && onPhotoClick(photo, index)"
       />
       <X
         v-if="removable"
         class="absolute top-1 right-1 stroke-gray-700 size-5 cursor-pointer hover:stroke-gray-800"
-        @click.stop="onXClick(photo.url)"
+        @click.stop="!photosStore.isLoading && onXClick(photo.url)"
       />
     </div>
   </div>
 </template>
 
 <script setup>
-import { usePhotosStore } from "@/stores/photos";
+import { usePetsStore } from "@/stores/usePetsStore";
+import { usePhotosStore } from "@/stores/usePhotosStore";
 import { X } from "lucide-vue-next";
 
 defineProps({
@@ -27,4 +28,5 @@ defineProps({
 });
 
 const photosStore = usePhotosStore();
+const petsStore = usePetsStore();
 </script>

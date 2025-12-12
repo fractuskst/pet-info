@@ -6,7 +6,7 @@
       <Button :icon="Undo" @click="router.push('/')" />
       <div class="flex gap-1 flex-nowrap">
         <Button v-if="hasPetInfo" @click="handleOpenPetForm" :icon="Pencil" />
-        <Button @click="handleRemovePet" :icon="Trash2" />
+        <Button :disabled="petsStore.isLoading" @click="handleDeletePet" :icon="Trash2" />
       </div>
     </div>
 
@@ -30,7 +30,7 @@
         v-if="photosStore.photosCount"
         removable
         :onPhotoClick="(_, index) => handleShowLightBox(index)"
-        :onXClick="handleRemovePhoto"
+        :onXClick="handleDeletePhoto"
       />
       <Button
         v-if="photosStore.photosCount < MAX_PHOTOS_PER_PET"
@@ -50,7 +50,6 @@
     :imgs="photosStore.photos.map((p) => p.url)"
     :index="indexRef"
     @hide="handleHideLightBox"
-    moveDisabled
   />
 </template>
 
@@ -66,9 +65,9 @@ import VueEasyLightbox from "vue-easy-lightbox";
 import { Undo, Pencil, Trash2, ImageUp } from "lucide-vue-next";
 import { useRouter } from "vue-router";
 import { MAX_PHOTOS_PER_PET } from "../../../shared/constants";
-import { usePetsStore } from "@/stores/pets";
-import { usePhotosStore } from "@/stores/photos";
-import { useAppStore } from "@/stores/app";
+import { usePetsStore } from "@/stores/usePetsStore";
+import { usePhotosStore } from "@/stores/usePhotosStore";
+import { useAppStore } from "@/stores/useAppStore";
 
 const petsStore = usePetsStore();
 const photosStore = usePhotosStore();
@@ -83,8 +82,8 @@ const { id } = defineProps({
 });
 
 onMounted(() => {
-  petsStore.fetchPet(id);
-  photosStore.fetchPhotos(id);
+  petsStore.getPet(id);
+  photosStore.getPhotos(id);
 });
 
 onUnmounted(() => {
@@ -103,16 +102,16 @@ const handleOpenPhotoForm = () => {
   appStore.isPhotoFormOpen = true;
 };
 
-const handleRemovePet = async () => {
-  await petsStore.removePet(id);
+const handleDeletePet = async () => {
+  await petsStore.deletePet(id);
   router.push("/");
 };
 
-const handleRemovePhoto = (url) => {
-  photosStore.removePhoto(id, url);
+const handleDeletePhoto = (url) => {
+  photosStore.deletePhoto(id, url);
 
   if (petsStore.selectedPet.mainPhoto === url) {
-    petsStore.editPet({ mainPhoto: null });
+    petsStore.updatePet({ mainPhoto: null });
   }
 };
 

@@ -1,8 +1,9 @@
-import { deletePhoto, getPhotos, uploadPhotos } from "@/services/photoService";
+import * as photoService from "@/services/photo.service";
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 import { useToast } from "vue-toastification";
 import { MAX_PHOTOS_PER_PET } from "../../../shared/constants";
+import handleClientError from "@/utils/handleClientError";
 
 const toast = useToast();
 
@@ -10,64 +11,74 @@ export const usePhotosStore = defineStore("photos", () => {
   const photos = ref([]);
   const pendingPhotos = ref([]);
   const previewUrls = ref([]);
+  const isLoading = ref(false);
 
   const photosCount = computed(() => photos.value.length);
   const pendingPhotosCount = computed(() => pendingPhotos.value.length);
   const freeSlots = computed(() => MAX_PHOTOS_PER_PET - (photosCount.value + pendingPhotosCount.value));
 
-  async function fetchPhotos(petId) {
+  const getPhotos = async (petId) => {
+    isLoading.value = true;
     try {
-      const data = await getPhotos(petId);
-      photos.value = data;
+      const fetchedPhotos = await photoService.getPhotos(petId);
+      photos.value = fetchedPhotos;
     } catch (err) {
-      toast.error(`Ошибка загрузки фотографий: ${err.message}`);
+      handleClientError(err, "Ошибка загрузки фотографий");
+    } finally {
+      isLoading.value = false;
     }
-  }
+  };
 
-  async function addPhotos(petId, formData) {
+  const uploadPhotos = async (petId, formData) => {
+    isLoading.value = true;
     try {
-      const newPhotos = await uploadPhotos(petId, formData);
+      const newPhotos = await photoService.uploadPhotos(petId, formData);
       photos.value.push(...newPhotos);
       toast.success("Фотографии успешно добавлены!");
     } catch (err) {
-      toast.error(`Ошибка при добавлении фотографий: ${err.message}`);
+      handleClientError(err, "Ошибка при добавлении фотографий");
+    } finally {
+      isLoading.value = false;
     }
-  }
+  };
 
-  async function removePhoto(petId, url) {
+  const deletePhoto = async (petId, url) => {
+    isLoading.value = true;
     try {
-      await deletePhoto(petId, url);
+      await photoService.deletePhoto(petId, url);
       photos.value = photos.value.filter((photo) => photo.url !== url);
       toast.success("Фотография успешно удалена!");
     } catch (err) {
-      toast.error(`Ошибка удаления фотографии: ${err.message}`);
+      handleClientError(err, "Ошибка удаления фотографии");
+    } finally {
+      isLoading.value = false;
     }
-  }
+  };
 
-  function preparePhotos(files) {
+  const preparePhotos = (files) => {
     const valid = files.filter((f) => f.type.startsWith("image/")).slice(0, freeSlots.value);
     const urls = valid.map((f) => URL.createObjectURL(f));
     pendingPhotos.value.push(...valid);
     previewUrls.value.push(...urls);
-  }
+  };
 
-  function removePreparedPhoto(index) {
+  const removePreparedPhoto = (index) => {
     URL.revokeObjectURL(previewUrls.value[index]);
     pendingPhotos.value.splice(index, 1);
     previewUrls.value.splice(index, 1);
-  }
+  };
 
-  function clearPendingPhotos() {
+  const clearPendingPhotos = () => {
     previewUrls.value.forEach(URL.revokeObjectURL);
     pendingPhotos.value = [];
     previewUrls.value = [];
-  }
+  };
 
-  async function submitPending(petId) {
+  const submitPending = async (petId) => {
     const formData = new FormData();
     pendingPhotos.value.forEach((photo) => formData.append("photos", photo));
-    await addPhotos(petId, formData);
-  }
+    await uploadPhotos(petId, formData);
+  };
 
   return {
     photos,
@@ -76,9 +87,10 @@ export const usePhotosStore = defineStore("photos", () => {
     photosCount,
     pendingPhotosCount,
     freeSlots,
-    fetchPhotos,
-    addPhotos,
-    removePhoto,
+    isLoading,
+    getPhotos,
+    uploadPhotos,
+    deletePhoto,
     preparePhotos,
     removePreparedPhoto,
     clearPendingPhotos,

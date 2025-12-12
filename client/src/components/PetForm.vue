@@ -32,7 +32,9 @@
         ></textarea>
       </div>
 
-      <Button type="submit">{{ petsStore.selectedPet ? "Подтвердить изменения" : "Добавить" }}</Button>
+      <Button type="submit" :disabled="petsStore.isLoading">{{
+        petsStore.selectedPet ? "Подтвердить изменения" : "Добавить"
+      }}</Button>
     </form>
   </Overlay>
 </template>
@@ -42,8 +44,8 @@ import { reactive, watch, onMounted, onUnmounted } from "vue";
 import Button from "./ui/PrimaryButton.vue";
 import Overlay from "./ui/Overlay.vue";
 import { X } from "lucide-vue-next";
-import { usePetsStore } from "@/stores/pets";
-import { useAppStore } from "@/stores/app";
+import { usePetsStore } from "@/stores/usePetsStore";
+import { useAppStore } from "@/stores/useAppStore";
 import prepareFormData from "@/utils/prepareFormData";
 
 const petsStore = usePetsStore();
@@ -110,10 +112,11 @@ const handleSubmit = () => {
   const preparedFormData = prepareFormData(formData);
 
   if (petsStore.selectedPet) {
-    petsStore.editPet(preparedFormData);
+    petsStore.updatePet(preparedFormData);
   } else {
-    petsStore.addPet(preparedFormData);
+    petsStore.createPet(preparedFormData);
   }
+
   handleCloseForm();
 };
 

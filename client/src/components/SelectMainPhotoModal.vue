@@ -15,9 +15,9 @@
 </template>
 
 <script setup>
-import { useAppStore } from "@/stores/app";
-import { usePetsStore } from "@/stores/pets";
-import { usePhotosStore } from "@/stores/photos";
+import { useAppStore } from "@/stores/useAppStore";
+import { usePetsStore } from "@/stores/usePetsStore";
+import { usePhotosStore } from "@/stores/usePhotosStore";
 import PhotosGrid from "./PhotosGrid.vue";
 import Overlay from "./ui/Overlay.vue";
 import { X } from "lucide-vue-next";
@@ -28,7 +28,7 @@ const petsStore = usePetsStore();
 const photosStore = usePhotosStore();
 
 const handlePhotoClick = async (photo) => {
-  await petsStore.editPet({ mainPhoto: photo.url });
+  await petsStore.updatePet({ mainPhoto: photo.url });
   petsStore.selectedPet = null;
   handleCloseModal();
 };

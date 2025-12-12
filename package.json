@@ -3,7 +3,7 @@
   "private": true,
   "packageManager": "pnpm@10.25.0",
   "scripts": {
-    "dev": "concurrently \"pnpm -F ./server dev\" \"pnpm -F ./client dev\""
+    "dev": "pnpm -r --parallel dev"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
