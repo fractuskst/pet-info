@@ -1,24 +1,8 @@
 import { API_ROUTES } from "@/routes";
-import handleServerResponse from "@/utils/handleServerResponse";
+import { del, get, postForm } from "./httpClient";
 
-export const getPhotos = async (petId) => {
-  const res = await fetch(`${API_ROUTES.photos}/${petId}`);
-  return handleServerResponse(res);
-};
+export const getPhotos = async (petId) => get(`${API_ROUTES.photos}/${petId}`);
 
-export const deletePhoto = async (petId, url) => {
-  const res = await fetch(`${API_ROUTES.photos}/${petId}`, {
-    method: "DELETE",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ url }),
-  });
-  return handleServerResponse(res);
-};
+export const uploadPhotos = async (petId, photoData) => postForm(`${API_ROUTES.photos}/${petId}`, photoData);
 
-export const uploadPhotos = async (petId, formData) => {
-  const res = await fetch(`${API_ROUTES.photos}/${petId}`, {
-    method: "POST",
-    body: formData,
-  });
-  return handleServerResponse(res);
-};
+export const deletePhoto = async (id) => del(`${API_ROUTES.photos}/${id}`);

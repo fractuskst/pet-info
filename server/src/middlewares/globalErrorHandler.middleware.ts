@@ -2,6 +2,8 @@ import { AppError } from "@/utils/AppError.js";
 import { NextFunction, Request, Response } from "express";
 
 const globalErrorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
+  console.error(err);
+
   if (err instanceof AppError && err.isOperational) {
     return res.status(err.statusCode).json({
       message: err.message,

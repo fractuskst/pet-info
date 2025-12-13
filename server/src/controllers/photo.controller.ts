@@ -33,19 +33,13 @@ export const addPhotos = catchAsync(async (req, res) => {
 });
 
 export const deletePhoto = catchAsync(async (req, res) => {
-  const petId = Number(req.params.id);
+  const id = Number(req.params.id);
 
-  if (!petId || Number.isNaN(petId)) {
-    throw new AppError("Некорректный ID питомца", 400);
+  if (!id || Number.isNaN(id)) {
+    throw new AppError("Некорректный ID фотографии", 400);
   }
 
-  const { url } = req.body;
-
-  if (!url) {
-    throw new AppError("Не передана ссылка на фото", 400);
-  }
-
-  await photoService.deletePhoto(petId, url);
+  await photoService.deletePhoto(id);
 
   res.sendStatus(204);
 });

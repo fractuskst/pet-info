@@ -10,7 +10,7 @@
       <X
         v-if="removable"
         class="absolute top-1 right-1 stroke-gray-700 size-5 cursor-pointer hover:stroke-gray-800"
-        @click.stop="!photosStore.isLoading && onXClick(photo.url)"
+        @click.stop="!photosStore.isLoading && onXClick(photo)"
       />
     </div>
   </div>

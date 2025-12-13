@@ -1,18 +1,18 @@
 import { createRouter, createWebHistory } from "vue-router";
-import HomePage from "@/pages/HomePage.vue";
-import PetDetails from "@/pages/PetDetails.vue";
+import PetsPage from "@/pages/PetsPage.vue";
+import PetDetailsPage from "@/pages/PetDetailsPage.vue";
 
 const routes = [
   {
     path: "/",
-    name: "Home",
-    component: HomePage,
+    name: "Pets",
+    component: PetsPage,
   },
 
   {
     path: "/:id",
     name: "PetDetails",
-    component: PetDetails,
+    component: PetDetailsPage,
     props: true,
   },
 ];

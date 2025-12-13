@@ -3,6 +3,7 @@ import multerS3 from "multer-s3";
 import s3 from "../config/s3.js";
 import path from "path";
 import { MAX_PHOTOS_PER_PET } from "@pet-info/shared/constants.js";
+import { AppError } from "@/utils/AppError.js";
 
 const createPetPhotosUpload = (petId: string) => {
   return multer({
@@ -32,7 +33,7 @@ const createPetPhotosUpload = (petId: string) => {
       if (isValidMime && isValidExt) {
         cb(null, true);
       } else {
-        cb(new Error("Неподдерживаемый формат изображения. Разрешены: JPG, PNG, WebP"));
+        cb(new AppError("Неподдерживаемый формат изображения. Разрешены: JPG, PNG, WebP"));
       }
     },
   }).array("photos", MAX_PHOTOS_PER_PET);

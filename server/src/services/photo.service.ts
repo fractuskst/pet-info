@@ -11,7 +11,7 @@ export const getPhotos = async (petId: number) => {
 };
 
 export const addPhotos = async (petId: number, photos: Express.MulterS3.File[]) => {
-  const petExists = await DB.get("SELECT 1 FROM pets WHERE id = ?", [petId]);
+  const petExists = await DB.get("SELECT * FROM pets WHERE id = ?", [petId]);
   if (!petExists) {
     throw new AppError("Питомец не найден", 404);
   }
@@ -52,8 +52,14 @@ export const addPhotos = async (petId: number, photos: Express.MulterS3.File[]) 
   return addedPhotos;
 };
 
-export const deletePhoto = async (petId: number, url: string) => {
-  const { pathname } = new URL(url);
+export const deletePhoto = async (id: number) => {
+  const photo = await DB.get("SELECT url FROM pet_photos WHERE id = ?", [id]);
+
+  if (!photo) {
+    throw new AppError("Фото не найдено", 404);
+  }
+
+  const { pathname } = new URL(photo.url);
   const fileKey = pathname.slice(1);
 
   try {
@@ -63,8 +69,8 @@ export const deletePhoto = async (petId: number, url: string) => {
     throw new AppError("Ошибка удаления файла из S3", 500);
   }
 
-  const sql = "DELETE FROM pet_photos WHERE petId = ? AND url = ?";
-  const result = await DB.run(sql, [petId, url]);
+  const sql = "DELETE FROM pet_photos WHERE id = ?";
+  const result = await DB.run(sql, [id]);
 
   if (result.changes === 0) {
     throw new AppError("Фото не найдено", 404);

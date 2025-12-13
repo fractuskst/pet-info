@@ -64,7 +64,7 @@ import PhotosGrid from "@/components/PhotosGrid.vue";
 import VueEasyLightbox from "vue-easy-lightbox";
 import { Undo, Pencil, Trash2, ImageUp } from "lucide-vue-next";
 import { useRouter } from "vue-router";
-import { MAX_PHOTOS_PER_PET } from "../../../shared/constants";
+import { MAX_PHOTOS_PER_PET } from "@pet-info/shared/constants";
 import { usePetsStore } from "@/stores/usePetsStore";
 import { usePhotosStore } from "@/stores/usePhotosStore";
 import { useAppStore } from "@/stores/useAppStore";
@@ -107,10 +107,10 @@ const handleDeletePet = async () => {
   router.push("/");
 };
 
-const handleDeletePhoto = (url) => {
-  photosStore.deletePhoto(id, url);
+const handleDeletePhoto = (photo) => {
+  photosStore.deletePhoto(photo.id);
 
-  if (petsStore.selectedPet.mainPhoto === url) {
+  if (petsStore.selectedPet.mainPhoto === photo.url) {
     petsStore.updatePet({ mainPhoto: null });
   }
 };

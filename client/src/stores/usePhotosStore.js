@@ -2,7 +2,7 @@ import * as photoService from "@/services/photo.service";
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 import { useToast } from "vue-toastification";
-import { MAX_PHOTOS_PER_PET } from "../../../shared/constants";
+import { MAX_PHOTOS_PER_PET } from "@pet-info/shared/constants";
 import handleClientError from "@/utils/handleClientError";
 
 const toast = useToast();
@@ -42,11 +42,11 @@ export const usePhotosStore = defineStore("photos", () => {
     }
   };
 
-  const deletePhoto = async (petId, url) => {
+  const deletePhoto = async (id) => {
     isLoading.value = true;
     try {
-      await photoService.deletePhoto(petId, url);
-      photos.value = photos.value.filter((photo) => photo.url !== url);
+      await photoService.deletePhoto(id);
+      photos.value = photos.value.filter((photo) => photo.id !== id);
       toast.success("Фотография успешно удалена!");
     } catch (err) {
       handleClientError(err, "Ошибка удаления фотографии");
