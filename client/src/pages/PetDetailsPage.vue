@@ -104,7 +104,7 @@ const handleOpenPhotoForm = () => {
 
 const handleDeletePet = async () => {
   await petsStore.deletePet(id);
-  router.push("/");
+  router.replace("/");
 };
 
 const handleDeletePhoto = (photo) => {

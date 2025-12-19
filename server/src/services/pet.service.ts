@@ -1,4 +1,4 @@
-import { IPet } from "@pet-info/shared/types.js";
+import { IPet, IPetPhoto } from "@pet-info/shared/types.js";
 import { DB } from "../db/database.js";
 import { deletePhoto } from "@/services/photo.service.js";
 import { AppError } from "@/utils/AppError.js";
@@ -72,10 +72,10 @@ export const updatePet = async (id: number, updates: Partial<IPet>) => {
 };
 
 export const deletePet = async (id: number) => {
-  const photos = await DB.all("SELECT url FROM pet_photos WHERE petId = ?", [id]);
+  const photos = await DB.all<IPetPhoto[]>("SELECT id FROM pet_photos WHERE petId = ?", [id]);
   await Promise.all(
-    photos.map((p) =>
-      deletePhoto(id, p.url).catch(() => {
+    photos.map((p: IPetPhoto) =>
+      deletePhoto(p.id).catch(() => {
         throw new AppError("Возникла ошибка при удалении фотографии", 500);
       }),
     ),

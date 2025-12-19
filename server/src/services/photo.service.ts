@@ -1,4 +1,4 @@
-import { IPetPhoto } from "@pet-info/shared/types.js";
+import { IPet, IPetPhoto } from "@pet-info/shared/types.js";
 import { DB } from "../db/database.js";
 import { MAX_PHOTOS_PER_PET } from "@pet-info/shared/constants.js";
 import * as s3Service from "@/services/s3.service.js";
@@ -11,12 +11,12 @@ export const getPhotos = async (petId: number) => {
 };
 
 export const addPhotos = async (petId: number, photos: Express.MulterS3.File[]) => {
-  const petExists = await DB.get("SELECT * FROM pets WHERE id = ?", [petId]);
+  const petExists = await DB.get<IPet>("SELECT * FROM pets WHERE id = ?", [petId]);
   if (!petExists) {
     throw new AppError("Питомец не найден", 404);
   }
 
-  const row = await DB.get("SELECT COUNT(*) as count FROM pet_photos WHERE petId = ?", [petId]);
+  const row = await DB.get<{ count: number }>("SELECT COUNT(*) as count FROM pet_photos WHERE petId = ?", [petId]);
 
   const currentCount = row?.count ?? 0;
   const freeSlots = MAX_PHOTOS_PER_PET - currentCount;
@@ -43,7 +43,7 @@ export const addPhotos = async (petId: number, photos: Express.MulterS3.File[]) 
     throw new AppError("Не все фото удалось сохранить", 500);
   }
 
-  const addedPhotos = results.map((r, i) => ({
+  const addedPhotos: IPetPhoto[] = results.map((r, i) => ({
     id: r.lastID!,
     petId,
     url: photosToSave[i].location,
@@ -53,7 +53,7 @@ export const addPhotos = async (petId: number, photos: Express.MulterS3.File[]) 
 };
 
 export const deletePhoto = async (id: number) => {
-  const photo = await DB.get("SELECT url FROM pet_photos WHERE id = ?", [id]);
+  const photo = await DB.get<{ url: string }>("SELECT url FROM pet_photos WHERE id = ?", [id]);
 
   if (!photo) {
     throw new AppError("Фото не найдено", 404);
